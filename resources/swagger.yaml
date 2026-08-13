@@ -1,0 +1,938 @@
+openapi: 3.0.0
+info:
+  title: Pet Daycare Management API
+  description: API Rest para acompanhamento e controle da creche de pets
+  version: 1.0.0
+  contact:
+    name: API Support
+
+servers:
+  - url: http://localhost:3001
+    description: Development server
+
+security:
+  - BearerAuth: []
+
+paths:
+  /auth/login-worker:
+    post:
+      tags:
+        - Authentication
+      summary: Login como trabalhador da creche
+      operationId: loginWorker
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "userWorker"
+                password:
+                  type: string
+                  example: "workerXXX"
+              required:
+                - username
+                - password
+      responses:
+        '200':
+          description: Login realizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  token:
+                    type: string
+                  role:
+                    type: string
+                    enum: [worker]
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '401':
+          description: Credenciais inválidas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+      security: []
+
+  /auth/login-tutor:
+    post:
+      tags:
+        - Authentication
+      summary: Login como tutor
+      operationId: loginTutor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "tutor_nomeDodog"
+                password:
+                  type: string
+                  example: "123456"
+              required:
+                - username
+                - password
+      responses:
+        '200':
+          description: Login realizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  token:
+                    type: string
+                  role:
+                    type: string
+                    enum: [tutor]
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '401':
+          description: Credenciais inválidas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+      security: []
+
+  /pets:
+    get:
+      tags:
+        - Pets
+      summary: Obter todos os pets (apenas trabalhadores)
+      operationId: getAllPets
+      responses:
+        '200':
+          description: Pets recuperados com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Pet'
+        '401':
+          description: Token não fornecido ou inválido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '500':
+          description: Erro ao recuperar pets
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+
+    post:
+      tags:
+        - Pets
+      summary: Registrar novo pet (apenas trabalhadores)
+      operationId: createPet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Bisteca"
+                breed:
+                  type: string
+                  enum: [vira-lata, salsichinha]
+                  example: "vira-lata"
+                age:
+                  type: integer
+                  example: 12
+                weight:
+                  type: number
+                  example: 22
+                tutorId:
+                  type: integer
+                  example: 1
+              required:
+                - name
+                - breed
+                - age
+                - weight
+                - tutorId
+      responses:
+        '201':
+          description: Pet criado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/Pet'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '401':
+          description: Token não fornecido ou inválido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '500':
+          description: Erro ao criar pet
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+
+  /pets/{petId}:
+    get:
+      tags:
+        - Pets
+      summary: Obter dados específicos de um pet
+      operationId: getPetById
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - name: name
+          in: query
+          required: false
+          schema:
+            type: string
+            example: "Bisteca"
+      responses:
+        '200':
+          description: Pet recuperado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/Pet'
+        '401':
+          description: Token não fornecido ou inválido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '404':
+          description: Pet não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '500':
+          description: Erro ao recuperar pet
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+
+    put:
+      tags:
+        - Pets
+      summary: Atualizar dados de um pet (apenas trabalhadores)
+      operationId: updatePet
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                breed:
+                  type: string
+                age:
+                  type: integer
+                weight:
+                  type: number
+      responses:
+        '200':
+          description: Pet atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/Pet'
+        '401':
+          description: Token não fornecido ou inválido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '404':
+          description: Pet não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '500':
+          description: Erro ao atualizar pet
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+
+    delete:
+      tags:
+        - Pets
+      summary: Deletar um pet (apenas trabalhadores)
+      operationId: deletePet
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Pet deletado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+        '401':
+          description: Token não fornecido ou inválido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '404':
+          description: Pet não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '500':
+          description: Erro ao deletar pet
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+
+  /daycare/report:
+    post:
+      tags:
+        - Daycare Reports
+      summary: Criar novo relatório diário (apenas trabalhadores)
+      operationId: createDailyReport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                petId:
+                  type: integer
+                  example: 1
+                date:
+                  type: string
+                  format: date
+                  example: "2026-08-03"
+                checkin:
+                  type: string
+                  example: "08:00"
+                checkout:
+                  type: string
+                  example: "17:00"
+                dormiu:
+                  type: string
+                  enum: [sim, não]
+                  example: "sim"
+                consumoAlimentar:
+                  type: string
+                  enum: [pouco, esfomeado]
+                  example: "esfomeado"
+                nivelEnergia:
+                  type: string
+                  enum: [pouca_bateria, bateria_cheia]
+                  example: "bateria_cheia"
+                pagamentoRealizado:
+                  type: string
+                  enum: [sim, não]
+                  example: "sim"
+              required:
+                - petId
+                - date
+                - checkin
+      responses:
+        '201':
+          description: Relatório criado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/DaycareReport'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '401':
+          description: Token não fornecido ou inválido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '404':
+          description: Pet não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '409':
+          description: Relatório já existe
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '500':
+          description: Erro ao criar relatório
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+
+  /daycare/report/{petId}/{date}:
+    get:
+      tags:
+        - Daycare Reports
+      summary: Obter relatório diário de um pet específico
+      operationId: getDailyReport
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2026-08-03"
+      responses:
+        '200':
+          description: Relatório recuperado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/DaycareReport'
+        '401':
+          description: Token não fornecido ou inválido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '404':
+          description: Relatório ou pet não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '500':
+          description: Erro ao recuperar relatório
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+
+    put:
+      tags:
+        - Daycare Reports
+      summary: Atualizar relatório diário (apenas trabalhadores)
+      operationId: updateDailyReport
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2026-08-03"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                checkin:
+                  type: string
+                checkout:
+                  type: string
+                dormiu:
+                  type: string
+                  enum: [sim, não]
+                consumoAlimentar:
+                  type: string
+                  enum: [pouco, esfomeado]
+                nivelEnergia:
+                  type: string
+                  enum: [pouca_bateria, bateria_cheia]
+                pagamentoRealizado:
+                  type: string
+                  enum: [sim, não]
+      responses:
+        '200':
+          description: Relatório atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/DaycareReport'
+        '401':
+          description: Token não fornecido ou inválido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '404':
+          description: Relatório ou pet não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '500':
+          description: Erro ao atualizar relatório
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+
+    delete:
+      tags:
+        - Daycare Reports
+      summary: Deletar relatório diário (apenas trabalhadores)
+      operationId: deleteDailyReport
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2026-08-03"
+      responses:
+        '200':
+          description: Relatório deletado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      petId:
+                        type: integer
+                      date:
+                        type: string
+        '401':
+          description: Token não fornecido ou inválido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '404':
+          description: Relatório ou pet não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '500':
+          description: Erro ao deletar relatório
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+
+components:
+  schemas:
+    Pet:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        breed:
+          type: string
+          enum: [vira-lata, salsichinha]
+        age:
+          type: integer
+        weight:
+          type: number
+        tutorId:
+          type: integer
+      required:
+        - id
+        - name
+        - breed
+        - age
+        - weight
+        - tutorId
+
+    DaycareReport:
+      type: object
+      properties:
+        id:
+          type: integer
+        petId:
+          type: integer
+        date:
+          type: string
+          format: date
+        checkin:
+          type: string
+        checkout:
+          type: string
+        dormiu:
+          type: string
+          enum: [sim, não]
+        consumoAlimentar:
+          type: string
+          enum: [pouco, esfomeado]
+        nivelEnergia:
+          type: string
+          enum: [pouca_bateria, bateria_cheia]
+        pagamentoRealizado:
+          type: string
+          enum: [sim, não]
+      required:
+        - id
+        - petId
+        - date
+        - checkin
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

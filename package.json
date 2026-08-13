@@ -1,0 +1,34 @@
+{
+  "name": "pet-daycare-api",
+  "version": "1.0.0",
+  "description": "API Rest para acompanhamento e controle da creche de pets",
+  "main": "src/server.js",
+  "scripts": {
+    "test": "mocha ./src/test/**/*.test.js --timeout 20000 --reporter mochawesome",
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "keywords": [
+    "pet",
+    "daycare",
+    "api",
+    "express"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "chai": "^6.2.2",
+    "dotenv": "^17.4.2",
+    "express": "^4.18.2",
+    "js-yaml": "^4.1.0",
+    "jsonwebtoken": "^9.0.0",
+    "mocha": "^11.8.0",
+    "mochawesome": "^8.0.1",
+    "supertest": "^7.2.2",
+    "swagger-ui-express": "^4.6.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
