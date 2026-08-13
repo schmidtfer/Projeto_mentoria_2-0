@@ -91,7 +91,7 @@ A documentação completa da API está disponível em Swagger:
 #### Autenticação
 
 - **POST** `/auth/login-worker` - Login como trabalhador
-- **POST** `/auth/login-tutor` - Login como tutor
+- **POST** `/auth/login-tutor` - Login como tutor (não precisa do token)
 
 #### Pets
 
@@ -104,8 +104,6 @@ A documentação completa da API está disponível em Swagger:
 #### Relatórios da Creche
 
 - **GET** `/daycare/report/{petId}/{date}` - Obter relatório de um dia específico
-- **GET** `/daycare/reports/{petId}` - Obter todos os relatórios de um pet
-- **GET** `/daycare/day?date=YYYY-MM-DD` - Obter todos os relatórios do dia (apenas trabalhadores)
 - **POST** `/daycare/report` - Criar novo relatório diário (apenas trabalhadores)
 - **PUT** `/daycare/report/{petId}/{date}` - Atualizar relatório (apenas trabalhadores)
 - **DELETE** `/daycare/report/{petId}/{date}` - Deletar relatório (apenas trabalhadores)
@@ -146,7 +144,7 @@ curl -X POST http://localhost:3001/auth/login-worker \
 ```bash
 curl -X POST http://localhost:3001/auth/login-tutor \
   -H "Content-Type: application/json" \
-  -d '{"username":"tutor_bisteca","password":"123456"}'
+  -d '{"username":"tutor_nomePet","password":123456"}'
 ```
 
 ### 3. Obter Todos os Pets
